@@ -410,6 +410,9 @@ function CRUD(options) {
       if (crud.findVM('form').$refs['form']) {
         crud.findVM('form').$refs['form'].clearValidate()
       }
+      if (crud.findVM('form').$refs['upload']) {
+        crud.findVM('form').$refs['upload'].clearFiles()
+      }
     },
     /**
      * 重置数据状态
