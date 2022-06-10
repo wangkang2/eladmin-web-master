@@ -89,7 +89,7 @@ function CRUD(options) {
     },
     page: {
       // 页码
-      page: 1,
+      page: 0,
       // 每页数据条数
       size: 10,
       // 总数据条数
@@ -348,7 +348,7 @@ function CRUD(options) {
         if (crud.params[item] === null || crud.params[item] === '') crud.params[item] = undefined
       })
       return {
-        page: crud.page.page,
+        page: crud.page.page - 1,
         size: crud.page.size,
         sort: crud.sort,
         ...crud.query,
