@@ -60,6 +60,21 @@
     <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
       <el-table-column type="selection" width="55" />
       <el-table-column prop="name" label="盲盒名称" />
+      <el-table-column prop="path" label="预览图">
+        <template slot-scope="{row}">
+          <el-image
+            :src=" baseApi + '/file/图片/' + row.picName"
+            :preview-src-list="[baseApi + '/file/图片/' + row.picName]"
+            fit="contain"
+            lazy
+            class="el-avatar"
+          >
+            <div slot="error">
+              <i class="el-icon-document" />
+            </div>
+          </el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="price" label="单价" />
       <el-table-column prop="boxSort" label="排序">
         <template slot-scope="scope">
@@ -164,10 +179,10 @@ export default {
       const isLt2M = file.size / 1024 / 1024 < 2
 
       if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+        this.$message.error('上传图片只能是 JPG 格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 5MB!')
+        this.$message.error('上传图片大小不能超过 5MB!')
       }
       return isJPG && isLt2M
     }
