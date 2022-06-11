@@ -12,74 +12,42 @@
     </div>
     <!--表单渲染-->
     <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="580px">
-      <el-form ref="form" :inline="true" :model="form" :rules="rules" size="small" label-width="80px">
-        <el-form-item label="菜单类型" prop="type">
-          <el-radio-group v-model="form.type" size="mini" style="width: 178px">
-            <el-radio-button label="0">目录</el-radio-button>
-            <el-radio-button label="1">菜单</el-radio-button>
-            <el-radio-button label="2">按钮</el-radio-button>
-          </el-radio-group>
+      <el-form ref="form" inline :model="form" :rules="rules" size="small" label-width="80px">
+        <el-form-item label="盲盒名称" prop="name">
+          <el-input v-model="form.name" style="width: 370px;" />
         </el-form-item>
-        <el-form-item v-show="form.type.toString() !== '2'" label="菜单图标" prop="icon">
-          <el-popover
-            placement="bottom-start"
-            width="450"
-            trigger="click"
-            @show="$refs['iconSelect'].reset()"
+        <el-form-item label="盲盒图片">
+          <el-upload
+            ref="upload"
+            :limit="1"
+            :before-upload="beforeAvatarUpload"
+            :headers="headers"
+            :on-success="handleAvatarSuccess"
+            :action="imagesUploadApi + '?name=' + form.name"
           >
-            <IconSelect ref="iconSelect" @selected="selected" />
-            <el-input slot="reference" v-model="form.icon" style="width: 450px;" placeholder="点击选择图标" readonly>
-              <svg-icon v-if="form.icon" slot="prefix" :icon-class="form.icon" class="el-input__icon" style="height: 32px;width: 16px;" />
-              <i v-else slot="prefix" class="el-icon-search el-input__icon" />
-            </el-input>
-          </el-popover>
+            <img v-if="form.picName" :src="baseApi + '/file/图片/' + form.picName" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
         </el-form-item>
-        <el-form-item v-show="form.type.toString() !== '2'" label="外链菜单" prop="iFrame">
-          <el-radio-group v-model="form.iFrame" size="mini">
-            <el-radio-button label="true">是</el-radio-button>
-            <el-radio-button label="false">否</el-radio-button>
-          </el-radio-group>
+        <el-form-item label="图片真实地址" prop="picPath" style="display: none">
+          <el-input v-model="form.picPath" style="width: 370px;display: none" />
         </el-form-item>
-        <el-form-item v-show="form.type.toString() === '1'" label="菜单缓存" prop="cache">
-          <el-radio-group v-model="form.cache" size="mini">
-            <el-radio-button label="true">是</el-radio-button>
-            <el-radio-button label="false">否</el-radio-button>
-          </el-radio-group>
+        <el-form-item label="盲盒单价" prop="price">
+          <el-input v-model="form.price" style="width: 370px;" />
         </el-form-item>
-        <el-form-item v-show="form.type.toString() !== '2'" label="菜单可见" prop="hidden">
-          <el-radio-group v-model="form.hidden" size="mini">
-            <el-radio-button label="false">是</el-radio-button>
-            <el-radio-button label="true">否</el-radio-button>
-          </el-radio-group>
+        <el-form-item label="运货规则" prop="shipRule">
+          <el-input v-model="form.shipRule" type="textarea" :rows="2" maxlength="200" show-word-limit style="width: 370px;" />
         </el-form-item>
-        <el-form-item v-if="form.type.toString() !== '2'" label="菜单标题" prop="title">
-          <el-input v-model="form.title" :style=" form.type.toString() === '0' ? 'width: 450px' : 'width: 178px'" placeholder="菜单标题" />
+        <el-form-item label="盲盒描述" prop="saleDescribe">
+          <el-input v-model="form.saleDescribe" type="textarea" :rows="2" maxlength="200" show-word-limit style="width: 370px;" />
         </el-form-item>
-        <el-form-item v-if="form.type.toString() === '2'" label="按钮名称" prop="title">
-          <el-input v-model="form.title" placeholder="按钮名称" style="width: 178px;" />
-        </el-form-item>
-        <el-form-item v-show="form.type.toString() !== '0'" label="权限标识" prop="permission">
-          <el-input v-model="form.permission" :disabled="form.iFrame.toString() === 'true'" placeholder="权限标识" style="width: 178px;" />
-        </el-form-item>
-        <el-form-item v-if="form.type.toString() !== '2'" label="路由地址" prop="path">
-          <el-input v-model="form.path" placeholder="路由地址" style="width: 178px;" />
-        </el-form-item>
-        <el-form-item label="菜单排序" prop="menuSort">
-          <el-input-number v-model.number="form.menuSort" :min="0" :max="999" controls-position="right" style="width: 178px;" />
-        </el-form-item>
-        <el-form-item v-show="form.iFrame.toString() !== 'true' && form.type.toString() === '1'" label="组件名称" prop="componentName">
-          <el-input v-model="form.componentName" style="width: 178px;" placeholder="匹配组件内Name字段" />
-        </el-form-item>
-        <el-form-item v-show="form.iFrame.toString() !== 'true' && form.type.toString() === '1'" label="组件路径" prop="component">
-          <el-input v-model="form.component" style="width: 178px;" placeholder="组件路径" />
-        </el-form-item>
-        <el-form-item label="上级类目" prop="pid">
-          <treeselect
-            v-model="form.pid"
-            :options="menus"
-            :load-options="loadMenus"
-            style="width: 450px;"
-            placeholder="选择上级类目"
+        <el-form-item label="排序" prop="saleSort">
+          <el-input-number
+            v-model.number="form.saleSort"
+            :min="0"
+            :max="999"
+            controls-position="right"
+            style="width: 370px;"
           />
         </el-form-item>
       </el-form>
@@ -89,164 +57,162 @@
       </div>
     </el-dialog>
     <!--表格渲染-->
-    <el-table
-      ref="table"
-      v-loading="crud.loading"
-      lazy
-      :load="getMenus"
-      :data="crud.data"
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-      row-key="id"
-      @select="crud.selectChange"
-      @select-all="crud.selectAllChange"
-      @selection-change="crud.selectionChangeHandler"
-    >
+    <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
       <el-table-column type="selection" width="55" />
-      <el-table-column :show-overflow-tooltip="true" label="菜单标题" width="125px" prop="title" />
-      <el-table-column prop="icon" label="图标" align="center" width="60px">
-        <template slot-scope="scope">
-          <svg-icon :icon-class="scope.row.icon ? scope.row.icon : ''" />
+      <el-table-column prop="name" label="盲盒名称" />
+      <el-table-column prop="path" label="预览图">
+        <template slot-scope="{row}">
+          <el-image
+            :src=" baseApi + '/file/图片/' + row.picName"
+            :preview-src-list="[baseApi + '/file/图片/' + row.picName]"
+            fit="contain"
+            lazy
+            class="el-avatar"
+          >
+            <div slot="error">
+              <i class="el-icon-document" />
+            </div>
+          </el-image>
         </template>
       </el-table-column>
-      <el-table-column prop="menuSort" align="center" label="排序">
+      <el-table-column prop="price" label="单价" />
+      <el-table-column prop="saleSort" label="排序">
         <template slot-scope="scope">
-          {{ scope.row.menuSort }}
+          {{ scope.row.saleSort }}
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="permission" label="权限标识" />
-      <el-table-column :show-overflow-tooltip="true" prop="component" label="组件路径" />
-      <el-table-column prop="iFrame" label="外链" width="75px">
-        <template slot-scope="scope">
-          <span v-if="scope.row.iFrame">是</span>
-          <span v-else>否</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="cache" label="缓存" width="75px">
-        <template slot-scope="scope">
-          <span v-if="scope.row.cache">是</span>
-          <span v-else>否</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="hidden" label="可见" width="75px">
-        <template slot-scope="scope">
-          <span v-if="scope.row.hidden">否</span>
-          <span v-else>是</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="createTime" label="创建日期" width="135px" />
-      <el-table-column v-if="checkPer(['admin','menu:edit','menu:del'])" label="操作" width="130px" align="center" fixed="right">
+      <el-table-column prop="createTime" label="创建日期" />
+      <!--   编辑与删除   -->
+      <el-table-column
+        v-if="checkPer(['admin','sale:edit','sale:del'])"
+        label="操作"
+        width="130px"
+        align="center"
+        fixed="right"
+      >
         <template slot-scope="scope">
           <udOperation
             :data="scope.row"
             :permission="permission"
-            msg="确定删除吗,如果存在下级节点则一并删除，此操作不能撤销！"
           />
         </template>
       </el-table-column>
     </el-table>
+    <!--分页组件-->
+    <pagination />
   </div>
 </template>
 
 <script>
-import crudMenu from '@/api/system/menu'
-import IconSelect from '@/components/IconSelect'
-import Treeselect from '@riophae/vue-treeselect'
-import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
+import crudSale from '@/api/shop/sale'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
-import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
+import rrOperation from '@crud/RR.operation'
 import DateRangePicker from '@/components/DateRangePicker'
+import pagination from '@crud/Pagination'
+import { getToken } from '@/utils/auth'
+import { mapGetters } from 'vuex'
 
 // crud交由presenter持有
-const defaultForm = { id: null, title: null, menuSort: 999, path: null, component: null, componentName: null, iFrame: false, roles: [], pid: 0, icon: null, cache: false, hidden: false, type: 0, permission: null }
+const defaultForm = { id: null, name: null, price: null, picName: null, picPath: null, shipRule: null, saleDescribe: null, saleSort: 999 }
 export default {
-  name: 'Menu',
-  components: { Treeselect, IconSelect, crudOperation, rrOperation, udOperation, DateRangePicker },
+  name: 'Sale',
+  components: { crudOperation, rrOperation, udOperation, DateRangePicker, pagination },
   cruds() {
-    return CRUD({ title: '菜单', url: 'api/menus', crudMethod: { ...crudMenu }})
+    return CRUD({ title: '盲盒', url: 'api/sale', crudMethod: { ...crudSale }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   data() {
+    const validateMoney = (rule, value, callback) => {
+      value = value + ''
+      const reg = /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g
+      if (!value) {
+        callback(new Error('价格不能为空'))
+      } else if (!reg.test(value)) {
+        callback(new Error('请输入正确格式的金额'))
+      } else if (value < 0) {
+        callback(new Error('金额不能小于零'))
+      } else if (value.indexOf('.') != -1 && value.split('.').length > 2) {
+        callback(new Error('请输入正确格式的金额')) // 防止输入多个小数点
+      } else if (value.indexOf('.') != -1 && value.split('.')[1].length > 2) {
+        callback(new Error('请输入正确的小数位数')) // 小数点后两位
+      } else {
+        callback()
+      }
+    }
     return {
-      menus: [],
-      permission: {
-        add: ['admin', 'menu:add'],
-        edit: ['admin', 'menu:edit'],
-        del: ['admin', 'menu:del']
+      headers: {
+        'Authorization': getToken()
       },
       rules: {
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+        name: [
+          { required: true, message: '请输入盲盒名称', trigger: 'blur' }
         ],
-        path: [
-          { required: true, message: '请输入地址', trigger: 'blur' }
+        price: [
+          { required: true, validator: validateMoney, trigger: 'blur' }
+        ],
+        saleSort: [
+          { required: true, message: '请输入序号', trigger: 'blur', type: 'number' }
         ]
+      },
+      permission: {
+        add: ['admin', 'sale:add'],
+        edit: ['admin', 'sale:edit'],
+        del: ['admin', 'sale:del']
       }
     }
   },
+  computed: {
+    ...mapGetters([
+      'baseApi',
+      'imagesUploadApi'
+    ])
+  },
   methods: {
-    // 新增与编辑前做的操作
-    [CRUD.HOOK.afterToCU](crud, form) {
-      this.menus = []
-      if (form.id != null) {
-        if (form.pid === null) {
-          form.pid = 0
-        }
-        this.getSupDepts(form.id)
-      } else {
-        this.menus.push({ id: 0, label: '顶级类目', children: null })
+    handleAvatarSuccess(response, file, fileList) {
+      this.form.picName = response.realName
+      this.form.picPath = response.path
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg'
+      const isLt2M = file.size / 1024 / 1024 < 2
+
+      if (!isJPG) {
+        this.$message.error('上传图片只能是 JPG 格式!')
       }
-    },
-    getMenus(tree, treeNode, resolve) {
-      const params = { pid: tree.id }
-      setTimeout(() => {
-        crudMenu.getMenus(params).then(res => {
-          resolve(res.content)
-        })
-      }, 100)
-    },
-    getSupDepts(id) {
-      crudMenu.getMenuSuperior(id).then(res => {
-        const children = res.map(function(obj) {
-          if (!obj.leaf && !obj.children) {
-            obj.children = null
-          }
-          return obj
-        })
-        this.menus = [{ id: 0, label: '顶级类目', children: children }]
-      })
-    },
-    loadMenus({ action, parentNode, callback }) {
-      if (action === LOAD_CHILDREN_OPTIONS) {
-        crudMenu.getMenusTree(parentNode.id).then(res => {
-          parentNode.children = res.map(function(obj) {
-            if (!obj.leaf) {
-              obj.children = null
-            }
-            return obj
-          })
-          setTimeout(() => {
-            callback()
-          }, 100)
-        })
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 5MB!')
       }
-    },
-    // 选中图标
-    selected(name) {
-      this.form.icon = name
+      return isJPG && isLt2M
     }
   }
 }
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
- ::v-deep .el-input-number .el-input__inner {
-    text-align: left;
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
   }
- ::v-deep .vue-treeselect__control,::v-deep .vue-treeselect__placeholder,::v-deep .vue-treeselect__single-value {
-    height: 30px;
-    line-height: 30px;
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+    border-style: dashed;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
   }
 </style>

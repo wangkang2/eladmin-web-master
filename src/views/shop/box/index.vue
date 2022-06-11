@@ -23,7 +23,7 @@
             :before-upload="beforeAvatarUpload"
             :headers="headers"
             :on-success="handleAvatarSuccess"
-            :action="imagesUploadApi + '?name=' + form.name"
+            :action="imagesUploadApi"
           >
             <img v-if="form.picName" :src="baseApi + '/file/图片/' + form.picName" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon" />
@@ -36,10 +36,10 @@
           <el-input v-model="form.price" style="width: 370px;" />
         </el-form-item>
         <el-form-item label="运货规则" prop="shipRule">
-          <el-input v-model="form.shipRule" type="textarea" :rows="2" style="width: 370px;" />
+          <el-input v-model="form.shipRule" type="textarea" :rows="2" maxlength="200" show-word-limit style="width: 370px;" />
         </el-form-item>
         <el-form-item label="盲盒描述" prop="boxDescribe">
-          <el-input v-model="form.boxDescribe" type="textarea" :rows="2" style="width: 370px;" />
+          <el-input v-model="form.boxDescribe" type="textarea" :rows="2" maxlength="200" show-word-limit style="width: 370px;" />
         </el-form-item>
         <el-form-item label="排序" prop="boxSort">
           <el-input-number
@@ -208,6 +208,7 @@ export default {
     height: 178px;
     line-height: 178px;
     text-align: center;
+    border-style: dashed;
   }
   .avatar {
     width: 178px;
