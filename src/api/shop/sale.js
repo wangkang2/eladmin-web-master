@@ -8,6 +8,22 @@ export function getSales(params) {
   })
 }
 
+export function getBoxBySaleId(params) {
+  return request({
+    url: 'api/sale/getBoxBySaleId',
+    method: 'get',
+    params
+  })
+}
+
+export function getLoopValueBySaleId(params) {
+  return request({
+    url: 'api/sale/getLoopValueBySaleId',
+    method: 'get',
+    params
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/sale',
@@ -32,4 +48,4 @@ export function edit(data) {
   })
 }
 
-export default { add, edit, del, getSales }
+export default { add, edit, del, getSales, getBoxBySaleId, getLoopValueBySaleId }

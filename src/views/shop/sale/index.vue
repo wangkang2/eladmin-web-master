@@ -11,14 +11,19 @@
       <crudOperation :permission="permission" />
     </div>
     <!--表单渲染-->
-    <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="780px">
+    <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" @opened="show()" @closed="hide()" width="780px">
       <el-form ref="form" inline :model="form" :rules="rules" size="small" label-width="150px">
         <el-form-item label="活动名称" prop="name">
           <el-input v-model="form.name" style="width: 370px;" />
         </el-form-item>
+        <el-form-item label="活动规则" prop="saleContent">
+          <div ref="editor" class="editor" />
+          <div v-html="editorContent" />
+        </el-form-item>
+
         <el-form-item label="微信引导图">
           <el-upload
-            ref="upload2"
+            ref="upload"
             :limit="1"
             :before-upload="beforeAvatarUpload"
             :headers="headers"
@@ -171,16 +176,17 @@
         <el-form-item label="红包3图真实地址" prop="redEnvelopePicPath3" style="display: none">
           <el-input v-model="form.redEnvelopePicPath3" style="width: 370px;display: none" />
         </el-form-item>
-        <el-form-item label="选择对应盲盒" prop="box3">
-          <el-select v-model="form.boxId3" style="width: 370px" placeholder="请选择盲盒" multiple>
+        <el-form-item label="选择对应盲盒" prop="boxs">
+          <el-select v-model="form.boxs" style="width: 370px" placeholder="请选择盲盒" multiple>
             <el-option
-              v-for="item in boxs3"
+              v-for="item in boxs"
               :key="item.id"
               :label="item.name"
               :value="item.id"
             />
           </el-select>
         </el-form-item>
+        
         <el-form-item label="是否循环">
           <el-radio-group v-model="form.isLoop" style="width: 370px">
             <el-radio label="1">是</el-radio>
@@ -194,7 +200,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="form.isLoop === '1' && form.loopType === '1' " label="循环日期" prop="loopValue">
-          <el-select v-model="form.loopValue" style="width: 370px" placeholder="请选择循环日期" multiple>
+          <el-select v-model="form.loopValue" style="width: 370px" placeholder="请选择循环日期" multiple clearable>
             <el-option label="星期一" value="1" />
             <el-option label="星期二" value="2" />
             <el-option label="星期三" value="3" />
@@ -204,8 +210,87 @@
             <el-option label="星期日" value="7" />
           </el-select>
         </el-form-item>
-        <el-form-item label="盲盒描述" prop="saleDescribe">
-          <el-input v-model="form.saleDescribe" type="textarea" :rows="2" maxlength="200" show-word-limit style="width: 370px;" />
+        <el-form-item v-if="form.isLoop === '1' && form.loopType === '2' " label="循环日期" prop="loopValue">
+          <el-select v-model="form.loopValue" style="width: 370px" placeholder="请选择循环日期" multiple clearable>
+            <el-option label="1号" value="1" />
+            <el-option label="2号" value="2" />
+            <el-option label="3号" value="3" />
+            <el-option label="4号" value="4" />
+            <el-option label="5号" value="5" />
+            <el-option label="6号" value="6" />
+            <el-option label="7号" value="7" />
+            <el-option label="8号" value="8" />
+            <el-option label="9号" value="9" />
+            <el-option label="10号" value="10" />
+            <el-option label="11号" value="11" />
+            <el-option label="12号" value="12" />
+            <el-option label="13号" value="13" />
+            <el-option label="14号" value="14" />
+            <el-option label="15号" value="15" />
+            <el-option label="16号" value="16" />
+            <el-option label="17号" value="17" />
+            <el-option label="18号" value="18" />
+            <el-option label="19号" value="19" />
+            <el-option label="20号" value="20" />
+            <el-option label="21号" value="21" />
+            <el-option label="22号" value="22" />
+            <el-option label="23号" value="23" />
+            <el-option label="24号" value="24" />
+            <el-option label="25号" value="25" />
+            <el-option label="26号" value="26" />
+            <el-option label="27号" value="27" />
+            <el-option label="28号" value="28" />
+            <el-option label="29号" value="29" />
+            <el-option label="30号" value="30" />
+            <el-option label="31号" value="31" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="参与次数" v-if="form.isLoop === '1'" prop="loopPartakeNum">
+          <el-input-number
+            v-model.number="form.loopPartakeNum"
+            :min="0"
+            :max="999"
+            controls-position="right"
+            style="width: 370px;"
+          />
+        </el-form-item>
+        <el-form-item label="活动时间" v-if="form.isLoop === '0'" prop="fixe">
+          <el-date-picker v-model="form.fixe" required type="datetimerange" align="right" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" style="width: 370px;" />
+        </el-form-item>
+        <el-form-item label="参与条件" v-if="form.isLoop === '0'" prop="partakeCondition">
+          <el-select v-model="form.partakeCondition" style="width: 370px" placeholder="请选择参与条件">
+            <el-option label="每月" value="1" />
+            <el-option label="每周" value="2" />
+            <el-option label="不限制" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="参与次数" v-if="form.isLoop === '0'"  prop="partakeNum">
+          <el-input-number
+            v-model.number="form.partakeNum"
+            :min="0"
+            :max="999"
+            controls-position="right"
+            style="width: 370px;"
+          />
+        </el-form-item>
+        <el-form-item label="分享文字" prop="shareText">
+          <el-input v-model="form.shareText" style="width: 370px;" placeholder="请输入分享链接的文字" />
+        </el-form-item>
+        <el-form-item label="分享图片">
+          <el-upload
+            ref="upload"
+            :limit="1"
+            :before-upload="beforeAvatarUpload"
+            :headers="headers"
+            :on-success="handleAvatarSuccessShare"
+            :action="imagesUploadApi"
+          >
+            <img v-if="form.sharePicName" :src="baseApi + '/file/图片/' + form.sharePicName" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="图片真实地址" prop="sharePicPath" style="display: none">
+          <el-input v-model="form.sharePicPath" style="width: 370px;display: none" />
         </el-form-item>
         <el-form-item label="排序" prop="saleSort">
           <el-input-number
@@ -241,7 +326,12 @@
           </el-image>
         </template>
       </el-table-column>
-      <el-table-column prop="isLoop" label="是否循环" />
+      <el-table-column prop="isLoop" label="是否循环" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.isLoop == '1'" style="color: green">是</span>
+          <span v-else style="color: blue">否</span>
+        </template>
+      </el-table-column>  
       <el-table-column label="状态" align="center" prop="enabled">
         <template slot-scope="scope">
           <el-switch
@@ -292,9 +382,11 @@ import DateRangePicker from '@/components/DateRangePicker'
 import pagination from '@crud/Pagination'
 import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
+import { upload } from '@/utils/upload'
+import E from 'wangeditor'
 
 // crud交由presenter持有
-const defaultForm = { id: null, name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxId3: null, boxName3: null, isLoop: null, loopType: null, loopValue: null, loopPartakeNum: null, fixed: '', partakeCondition: null, partakeNum: null, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
+const defaultForm = { id: null, name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxs: [], isLoop: '1', loopType: null, loopValue: [], loopPartakeNum: 3, fixed: '', partakeCondition: null, partakeNum: 3, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
 export default {
   name: 'Sale',
   components: { crudOperation, rrOperation, udOperation, DateRangePicker, pagination },
@@ -322,7 +414,8 @@ export default {
       }
     }
     return {
-      coupons1: [], coupons2: [], boxs3: [],
+      coupons1: [], coupons2: [], boxs: [],
+      editorContent:'123',editor:null,
       headers: {
         'Authorization': getToken()
       },
@@ -351,8 +444,8 @@ export default {
     ])
   },
   mounted() {
-    this.getCoupons()
-    this.getBoxs()
+    this.getCoupons();
+    this.getBoxs();
   },
   methods: {
     handleAvatarSuccessWechat(response, file, fileList) {
@@ -387,7 +480,7 @@ export default {
       this.form.redEnvelopePicName3 = response.realName
       this.form.redEnvelopePicPath3 = response.path
     },
-    handleAvatarSuccessRedShare(response, file, fileList) {
+    handleAvatarSuccessShare(response, file, fileList) {
       this.form.sharePicName = response.realName
       this.form.sharePicPath = response.path
     },
@@ -427,8 +520,39 @@ export default {
     },
     getBoxs() {
       getBoxs({ delFlag: true }).then(res => {
-        this.boxs3 = res.content
+        this.boxs = res.content
       })
+    },
+    [CRUD.HOOK.beforeToEdit](crud, form) {
+      crudSale.getBoxBySaleId({ saleId: form.id }).then(res => {
+        form.boxs = res;
+      });
+      crudSale.getLoopValueBySaleId({ saleId: form.id }).then(res => {
+        form.loopValue = res;
+      });
+      this.$set(this.form, 'fixed', [form.fixedFrom, form.fixedTo]);
+    },
+    [CRUD.HOOK.afterToEdit](crud, form) {
+      this.editorContent = form.id;
+    },
+    show(){
+      this.editor = new E(this.$refs.editor)
+      this.editor.create()
+      if(this.editorContent){
+        this.editor.txt.html(this.editorContent)
+      }else{
+        this.editor.txt.html('')
+      }
+      
+    },
+    hide(){
+      this.$ref.editor.innerHTML = '';
+      this.editor.destroy()
+      this.edit = null;
+    },
+    fuzhi(){
+      alert('2222')
+      this.editor.txt.html('2222')
     }
   }
 }
@@ -459,5 +583,13 @@ export default {
     width: 178px;
     height: 178px;
     display: block;
+  }
+  .editor{
+    text-align:left;
+    margin: 20px;
+    width: 730px;
+  }
+ ::v-deep .w-e-text-container {
+    height: 360px !important;
   }
 </style>
