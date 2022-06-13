@@ -18,9 +18,8 @@
         </el-form-item>
         <el-form-item label="活动规则" prop="saleContent">
           <div ref="editor" class="editor" />
-          <div v-html="editorContent" />
         </el-form-item>
-
+        <el-button @click="fuzhi">赋值</el-button>
         <el-form-item label="微信引导图">
           <el-upload
             ref="upload"
@@ -371,6 +370,7 @@
 </template>
 
 <script>
+import E from 'wangeditor'
 import crudSale from '@/api/shop/sale'
 import { getCoupons } from '@/api/shop/coupon'
 import { getBoxs } from '@/api/shop/box'
@@ -383,10 +383,10 @@ import pagination from '@crud/Pagination'
 import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
 import { upload } from '@/utils/upload'
-import E from 'wangeditor'
+
 
 // crud交由presenter持有
-const defaultForm = { id: null, name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxs: [], isLoop: '1', loopType: null, loopValue: [], loopPartakeNum: 3, fixed: '', partakeCondition: null, partakeNum: 3, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
+const defaultForm = { id: null, content:'', name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxs: [], isLoop: '1', loopType: null, loopValue: [], loopPartakeNum: 3, fixed: '', partakeCondition: null, partakeNum: 3, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
 export default {
   name: 'Sale',
   components: { crudOperation, rrOperation, udOperation, DateRangePicker, pagination },
@@ -414,8 +414,8 @@ export default {
       }
     }
     return {
+      loading: false,
       coupons1: [], coupons2: [], boxs: [],
-      editorContent:'123',editor:null,
       headers: {
         'Authorization': getToken()
       },
@@ -531,27 +531,26 @@ export default {
         form.loopValue = res;
       });
       this.$set(this.form, 'fixed', [form.fixedFrom, form.fixedTo]);
+      form.content = form.id;
     },
     [CRUD.HOOK.afterToEdit](crud, form) {
-      this.editorContent = form.id;
+      this.form.content = form.id;
     },
     show(){
       this.editor = new E(this.$refs.editor)
-      this.editor.create()
-      if(this.editorContent){
-        this.editor.txt.html(this.editorContent)
-      }else{
-        this.editor.txt.html('')
+      this.editor.config.zIndex = 10
+      this.editor.config.onchange = (html) => {
+        this.form.content = html
       }
+      this.editor.create()
       
     },
     hide(){
-      this.$ref.editor.innerHTML = '';
+      this.editor.txt.html('')
       this.editor.destroy()
       this.edit = null;
     },
     fuzhi(){
-      alert('2222')
       this.editor.txt.html('2222')
     }
   }
