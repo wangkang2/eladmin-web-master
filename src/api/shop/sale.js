@@ -24,6 +24,14 @@ export function getLoopValueBySaleId(params) {
   })
 }
 
+export function getSaleContentBySaleId(params) {
+  return request({
+    url: 'api/sale/getSaleContentBySaleId',
+    method: 'get',
+    params
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/sale',
@@ -48,4 +56,4 @@ export function edit(data) {
   })
 }
 
-export default { add, edit, del, getSales, getBoxBySaleId, getLoopValueBySaleId }
+export default { add, edit, del, getSales, getBoxBySaleId, getLoopValueBySaleId, getSaleContentBySaleId }

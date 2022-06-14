@@ -11,15 +11,11 @@
       <crudOperation :permission="permission" />
     </div>
     <!--表单渲染-->
-    <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" @opened="show()" @closed="hide()" width="780px">
+    <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="780px" @opened="show()" @closed="hide()">
       <el-form ref="form" inline :model="form" :rules="rules" size="small" label-width="150px">
         <el-form-item label="活动名称" prop="name">
           <el-input v-model="form.name" style="width: 370px;" />
         </el-form-item>
-        <el-form-item label="活动规则" prop="saleContent">
-          <div ref="editor" class="editor" />
-        </el-form-item>
-        <el-button @click="fuzhi">赋值</el-button>
         <el-form-item label="微信引导图">
           <el-upload
             ref="upload"
@@ -185,7 +181,9 @@
             />
           </el-select>
         </el-form-item>
-        
+        <el-form-item label="活动规则" prop="saleContent">
+          <div ref="editor" class="editor" />
+        </el-form-item>
         <el-form-item label="是否循环">
           <el-radio-group v-model="form.isLoop" style="width: 370px">
             <el-radio label="1">是</el-radio>
@@ -244,7 +242,7 @@
             <el-option label="31号" value="31" />
           </el-select>
         </el-form-item>
-        <el-form-item label="参与次数" v-if="form.isLoop === '1'" prop="loopPartakeNum">
+        <el-form-item v-if="form.isLoop === '1'" label="参与次数" prop="loopPartakeNum">
           <el-input-number
             v-model.number="form.loopPartakeNum"
             :min="0"
@@ -253,17 +251,17 @@
             style="width: 370px;"
           />
         </el-form-item>
-        <el-form-item label="活动时间" v-if="form.isLoop === '0'" prop="fixe">
+        <el-form-item v-if="form.isLoop === '0'" label="活动时间" prop="fixe">
           <el-date-picker v-model="form.fixe" required type="datetimerange" align="right" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']" style="width: 370px;" />
         </el-form-item>
-        <el-form-item label="参与条件" v-if="form.isLoop === '0'" prop="partakeCondition">
+        <el-form-item v-if="form.isLoop === '0'" label="参与条件" prop="partakeCondition">
           <el-select v-model="form.partakeCondition" style="width: 370px" placeholder="请选择参与条件">
             <el-option label="每月" value="1" />
             <el-option label="每周" value="2" />
             <el-option label="不限制" value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item label="参与次数" v-if="form.isLoop === '0'"  prop="partakeNum">
+        <el-form-item v-if="form.isLoop === '0'" label="参与次数" prop="partakeNum">
           <el-input-number
             v-model.number="form.partakeNum"
             :min="0"
@@ -325,12 +323,12 @@
           </el-image>
         </template>
       </el-table-column>
-      <el-table-column prop="isLoop" label="是否循环" >
+      <el-table-column prop="isLoop" label="是否循环">
         <template slot-scope="scope">
           <span v-if="scope.row.isLoop == '1'" style="color: green">是</span>
           <span v-else style="color: blue">否</span>
         </template>
-      </el-table-column>  
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="enabled">
         <template slot-scope="scope">
           <el-switch
@@ -384,9 +382,8 @@ import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
 import { upload } from '@/utils/upload'
 
-
 // crud交由presenter持有
-const defaultForm = { id: null, content:'', name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxs: [], isLoop: '1', loopType: null, loopValue: [], loopPartakeNum: 3, fixed: '', partakeCondition: null, partakeNum: 3, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
+const defaultForm = { id: null, content: '', name: null, wechatPicName: null, wechatPicPath: null, miniappPicName: null, miniappPicPath: null, backgroundPicName: null, backgroundPicPath: null, prizePoolPicName1: null, prizePoolPicPath1: null, prizePoolPicName2: null, prizePoolPicPath2: null, redEnvelopePicName1: null, redEnvelopePicPath1: null, couponId1: null, couponName1: null, redEnvelopePicName2: null, redEnvelopePicPath2: null, couponId2: null, couponName2: null, redEnvelopePicName3: null, redEnvelopePicPath3: null, boxs: [], isLoop: '1', loopType: null, loopValue: [], loopPartakeNum: 3, fixed: '', partakeCondition: null, partakeNum: 3, shareText: null, sharePicName: null, sharePicPath: null, enabled: true, saleSort: 999 }
 export default {
   name: 'Sale',
   components: { crudOperation, rrOperation, udOperation, DateRangePicker, pagination },
@@ -444,8 +441,8 @@ export default {
     ])
   },
   mounted() {
-    this.getCoupons();
-    this.getBoxs();
+    this.getCoupons()
+    this.getBoxs()
   },
   methods: {
     handleAvatarSuccessWechat(response, file, fileList) {
@@ -525,33 +522,43 @@ export default {
     },
     [CRUD.HOOK.beforeToEdit](crud, form) {
       crudSale.getBoxBySaleId({ saleId: form.id }).then(res => {
-        form.boxs = res;
-      });
+        form.boxs = res
+      })
       crudSale.getLoopValueBySaleId({ saleId: form.id }).then(res => {
-        form.loopValue = res;
-      });
-      this.$set(this.form, 'fixed', [form.fixedFrom, form.fixedTo]);
-      form.content = form.id;
+        form.loopValue = res
+      })
+      crudSale.getSaleContentBySaleId({ saleId: form.id }).then(res => {
+        form.content = res
+        setTimeout(() => {
+          this.editor.txt.html(form.content)
+        }, 0)
+      })
+      this.$set(this.form, 'fixed', [form.fixedFrom, form.fixedTo])
     },
-    [CRUD.HOOK.afterToEdit](crud, form) {
-      this.form.content = form.id;
-    },
-    show(){
+    show() {
+      const _this = this
       this.editor = new E(this.$refs.editor)
       this.editor.config.zIndex = 10
+      this.editor.config.customUploadImg = function(files, insert) {
+      // files 是 input 中选中的文件列表
+      // insert 是获取图片 url 后，插入到编辑器的方法
+        files.forEach(image => {
+          upload(_this.imagesUploadApi, image).then(res => {
+            const data = res.data
+            const url = _this.baseApi + '/file/' + data.type + '/' + data.realName
+            insert(url)
+          })
+        })
+      }
       this.editor.config.onchange = (html) => {
         this.form.content = html
       }
       this.editor.create()
-      
     },
-    hide(){
+    hide() {
       this.editor.txt.html('')
       this.editor.destroy()
-      this.edit = null;
-    },
-    fuzhi(){
-      this.editor.txt.html('2222')
+      this.edit = null
     }
   }
 }
